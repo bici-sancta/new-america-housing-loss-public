@@ -273,6 +273,13 @@ def main(input_path: str) -> None:
     df_mort = load_data(sub_directories, 'mortgage_foreclosures')
     df_tax = load_data(sub_directories, 'tax_lien_foreclosures')
 
+    # ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    # ... local hack to run reduced size data set
+    # ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    # df_evic = df_evic.head(1000)
+    # df_mort = df_mort.head(1000)
+    # ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
     if (df_evic is None) and (df_mort is None) and (df_tax is None):
         print(
             'No data files matched our requirements for this analysis.'

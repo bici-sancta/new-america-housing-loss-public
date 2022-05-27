@@ -26,9 +26,21 @@ def verify_input_directory(input_path: str) -> T.List:
     if len(sub_directories) == 0:
         print('\u2326  No sub-directories present in input directory')
         return None
+
+    # ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    # ... local hack to get subdirectories supplied as command line arguments
+    # ... correctly thru the verification check
+    # ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    ls = list(sub_directories)
+    import os
+    ls_sub_dir = [x.split(os.sep)[-1] for x in ls]
+    sub_directories = set(ls_sub_dir)
+    # ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
     if len(sub_directories.intersection(REQUIRED_SUB_DIRECTORIES)) == 0:
         print('\u2326  Required sub-directories missing from input directory')
         return None
+
     print('\u2713  Required sub-directories found in input directory!')
     return [Path(input_path) / sd for sd in sub_directories]
 

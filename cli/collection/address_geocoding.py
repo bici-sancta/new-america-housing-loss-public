@@ -35,7 +35,7 @@ from collection.address_cleaning import get_zipcode5
 def format_data_for_geocoding(input_df: pd.DataFrame) -> T.Union[pd.DataFrame, None]:
     """Given an input dataframe of clean addresses, format it to match Census batch geocoder specs."""
     # Check for empty input
-    if input_df is None:
+    if not len(input_df) :
         return None
     # Store the record index to ensure we can match geocoded records back to the originals
     output_df = input_df.reset_index().copy()
@@ -146,25 +146,30 @@ def census_geocode_full_dataset(
     # Format the dataframe for geocoding with Census Batch Geocoder API
     df_geocode_cols = format_data_for_geocoding(input_df)
 
-    # Loop through the dataframe chunks and geocode them
-    for chunk in tqdm(
-        generate_geocode_chunks(df_geocode_cols),
-        desc="Geocoding progress",
-        total=math.ceil(len(df_geocode_cols) / GEOCODE_CHUNK_SIZE),
-    ):
-        geocoded_chunk = census_geocode_records(chunk)
-        if len(output_df) == 0:
-            output_df = geocoded_chunk
-        else:
-            output_df = pd.concat([output_df, geocoded_chunk], ignore_index=True)
+    # ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    # ... anther local hack for debugging ~~ add if on df_geocode_cols length
+    # ... -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    if df_geocode_cols is not None:
 
-        # Check how many chunks we have geocoded and cache if it is time to do so
-        total_geocoded_chunks += 1
-        if total_geocoded_chunks % cache_every_n_chunks == 0:
-            # If we have a cache available, append to the geocoded data, assuming process resumed
-            if cached_df is not None:
-                output_df = pd.concat([cached_df, output_df], ignore_index=True)
-            output_df.to_csv(cache_filename, index=False)
+    # Loop through the dataframe chunks and geocode them
+        for chunk in tqdm(
+            generate_geocode_chunks(df_geocode_cols),
+            desc="Geocoding progress",
+            total=math.ceil(len(df_geocode_cols) / GEOCODE_CHUNK_SIZE),):
+
+            geocoded_chunk = census_geocode_records(chunk)
+            if len(output_df) == 0:
+                output_df = geocoded_chunk
+            else:
+                output_df = pd.concat([output_df, geocoded_chunk], ignore_index=True)
+
+            # Check how many chunks we have geocoded and cache if it is time to do so
+            total_geocoded_chunks += 1
+            if total_geocoded_chunks % cache_every_n_chunks == 0:
+                # If we have a cache available, append to the geocoded data, assuming process resumed
+                if cached_df is not None:
+                    output_df = pd.concat([cached_df, output_df], ignore_index=True)
+                output_df.to_csv(cache_filename, index=False)
 
     # If we have a cache available, append to the geocoded data, assuming process resumed
     if cached_df is not None:
